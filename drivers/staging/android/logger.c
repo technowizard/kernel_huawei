@@ -623,8 +623,8 @@ static int __init logger_init(void)
 	msm_proc_comm(PCOM_NV_READ, &nv_log_ctl_info, (unsigned*)&ctl_info) ; 
 	printk("logger.c: log on/off=%d\n", ctl_info.on_off_flag);
 	/*if log nv(NV_LOG_CTL_INFO_I) is 0 or inactive , we don't init the logger driver*/
-	if(ctl_info.on_off_flag != USER_LOG_ON)
-		return 0;
+//	if(ctl_info.on_off_flag != USER_LOG_ON)
+//		return 0;
 #endif
 /*DTS2011092603497 mazhenhua user log on/off 20110927 end >*/
 
