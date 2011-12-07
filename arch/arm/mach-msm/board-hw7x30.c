@@ -217,7 +217,7 @@ usb_pid_stru *curr_usb_pid_ptr = &usb_pid_array[0];
 
 /* DTS2011101201153  hujun 20111030 end > */
 /*use pimc gpio 36 to enable the powre of SD*/
-#ifdef CONFIG_HUAWEI_KERNEL
+#ifndef CONFIG_HUAWEI_KERNEL
 #define PMIC_GPIO_SDC4_EN_N	35  /* PMIC GPIO Number 36 */
 #else
 #define PMIC_GPIO_SDC4_EN_N	17  /* PMIC GPIO Number 18 */
@@ -8389,8 +8389,7 @@ static struct mmc_platform_data msm7x30_sdc3_data = {
 #ifdef CONFIG_MMC_MSM_SDIO_SUPPORT
 /* < DTS2011022102443 xuke 20110303 begin */
 #ifdef CONFIG_HUAWEI_KERNEL
-	/* disable sdiowakeup_irq  */
-	/*.sdiowakeup_irq = MSM_GPIO_TO_INT(118),*/
+	.sdiowakeup_irq = MSM_GPIO_TO_INT(118),
 #endif
 /* DTS2011022102443 xuke 20110303 end > */
 #endif
@@ -8487,7 +8486,7 @@ static void msm_sdc1_lvlshft_enable(void)
 #endif
 
 /* < DTS2010111804286  hanshirong 20101118 begin */
-#ifdef CONFIG_HUAWEI_WIFI_SDCC
+#ifndef CONFIG_HUAWEI_WIFI_SDCC
 
 /* < DTS2011090203253 xuke 20110902 begin */
 #define BCM_CHIP_4329						0
@@ -8780,6 +8779,7 @@ static struct wifi_platform_data bcm_wifi_control = {
 /* < DTS2011052606009 jiaxianghong 20110527 end */
 };
 
+
 static struct platform_device bcm_wifi_device = {
         /* bcm4329_wlan device */
         .name           = "bcm4329_wlan",
@@ -9067,7 +9067,7 @@ static void __init msm7x30_init_mmc(void)
 	msm_sdcc_setup_gpio(3, 1);
 	msm_add_sdcc(3, &msm7x30_sdc3_data);
 /* < DTS2010111804286  hanshirong 20101118 begin */
-#ifdef CONFIG_HUAWEI_WIFI_SDCC
+#ifndef CONFIG_HUAWEI_WIFI_SDCC
 /* < DTS2011090203253 xuke 20110902 begin */
 	bcm_detect_chip_type();
 	bcm_wifi_init_gpio_mem();
