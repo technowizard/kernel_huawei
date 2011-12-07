@@ -1613,7 +1613,7 @@ static int msm_hs_startup(struct uart_port *uport)
 	if (use_low_power_wakeup(msm_uport)) {
   /* < DTS2011041200623 xuhui 20110412 begin */
   /*disable QC's In Band Sleep mode with BCM4329 bluetooth chip*/
-  #ifdef CONFIG_HUAWEI_KERNEL
+  #ifndef CONFIG_HUAWEI_KERNEL
   printk(KERN_ERR "msm_serial_hs --enable use_lowpoer_wakeup\n");
   #endif
   /* DTS2011041200623 xuhui 20110412 end > */
