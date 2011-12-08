@@ -4829,6 +4829,8 @@ static int gsensor_support_dummyaddr(void)
     }
     return ret;
 }
+
+#if 0
 static int gsensor_support_dummyaddr_adi346(void)
 {
     int ret = -1;	/*default value means actual address*/
@@ -4837,6 +4839,8 @@ static int gsensor_support_dummyaddr_adi346(void)
 
     return ret;
 }
+#endif
+
 static int gs_init_flag = 0;   /*gsensor is not initialized*/
 
 /* < DTS2011042801270 yuezenglong 20110428 begin */
