@@ -8490,7 +8490,7 @@ static void msm_sdc1_lvlshft_enable(void)
 #endif
 
 /* < DTS2010111804286  hanshirong 20101118 begin */
-#ifndef CONFIG_HUAWEI_WIFI_SDCC
+#ifdef CONFIG_HUAWEI_WIFI_SDCC
 
 /* < DTS2011090203253 xuke 20110902 begin */
 #define BCM_CHIP_4329						0
@@ -9071,7 +9071,7 @@ static void __init msm7x30_init_mmc(void)
 	msm_sdcc_setup_gpio(3, 1);
 	msm_add_sdcc(3, &msm7x30_sdc3_data);
 /* < DTS2010111804286  hanshirong 20101118 begin */
-#ifndef CONFIG_HUAWEI_WIFI_SDCC
+#ifdef CONFIG_HUAWEI_WIFI_SDCC
 /* < DTS2011090203253 xuke 20110902 begin */
 	bcm_detect_chip_type();
 	bcm_wifi_init_gpio_mem();
