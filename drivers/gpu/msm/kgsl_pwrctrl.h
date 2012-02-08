@@ -1,4 +1,4 @@
-/* Copyright (c) 2010-2011, Code Aurora Forum. All rights reserved.
+/* Copyright (c) 2010-2012, Code Aurora Forum. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -13,8 +13,6 @@
 #ifndef __KGSL_PWRCTRL_H
 #define __KGSL_PWRCTRL_H
 
-#include <mach/internal_power_rail.h>
-
 /*****************************************************************************
 ** power flags
 *****************************************************************************/
@@ -23,7 +21,6 @@
 
 #define KGSL_PWRLEVEL_TURBO 0
 #define KGSL_PWRLEVEL_NOMINAL 1
-#define KGSL_PWRLEVEL_LOW_OFFSET 2
 
 #define KGSL_MAX_CLKS 5
 
@@ -42,7 +39,6 @@ struct kgsl_busy {
 struct kgsl_pwrctrl {
 	int interrupt_num;
 	int have_irq;
-	unsigned int pwr_rail;
 	struct clk *ebi1_clk;
 	struct clk *grp_clks[KGSL_MAX_CLKS];
 	unsigned long power_flags;
@@ -56,15 +52,13 @@ struct kgsl_pwrctrl {
 	unsigned int nap_allowed;
 	const char *regulator_name;
 	const char *irq_name;
-	const char *src_clk_name;
 	s64 time;
 	struct kgsl_busy busy;
+	unsigned int restore_slumber;
 };
 
-void kgsl_pwrctrl_clk(struct kgsl_device *device, int state);
-void kgsl_pwrctrl_axi(struct kgsl_device *device, int state);
-void kgsl_pwrctrl_pwrrail(struct kgsl_device *device, int state);
 void kgsl_pwrctrl_irq(struct kgsl_device *device, int state);
+void kgsl_pwrctrl_clk(struct kgsl_device *device, int state);
 int kgsl_pwrctrl_init(struct kgsl_device *device);
 void kgsl_pwrctrl_close(struct kgsl_device *device);
 void kgsl_timer(unsigned long data);
@@ -79,9 +73,12 @@ int kgsl_pwrctrl_init_sysfs(struct kgsl_device *device);
 void kgsl_pwrctrl_uninit_sysfs(struct kgsl_device *device);
 void kgsl_pwrctrl_enable(struct kgsl_device *device);
 void kgsl_pwrctrl_disable(struct kgsl_device *device);
+void kgsl_pwrctrl_stop_work(struct kgsl_device *device);
 static inline unsigned long kgsl_get_clkrate(struct clk *clk)
 {
 	return (clk != NULL) ? clk_get_rate(clk) : 0;
 }
 
+void kgsl_pwrctrl_set_state(struct kgsl_device *device, unsigned int state);
+void kgsl_pwrctrl_request_state(struct kgsl_device *device, unsigned int state);
 #endif /* __KGSL_PWRCTRL_H */
