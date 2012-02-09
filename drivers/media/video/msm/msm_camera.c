@@ -70,6 +70,9 @@ static enum msm_camera_type camera_type[MSM_MAX_CAMERA_SENSORS];
 static uint32_t sensor_mount_angle[MSM_MAX_CAMERA_SENSORS];
 
 #ifdef CONFIG_MSM_CAMERA_DEBUG
+#undef CDBG
+#define CDBG(fmt, args...) printk(KERN_INFO "msm_camera:" fmt, ## args);
+
 static const char *vfe_config_cmd[] = {
 	"CMD_GENERAL",  /* 0 */
 	"CMD_AXI_CFG_OUT1",
@@ -2327,7 +2330,7 @@ static long msm_ioctl_config(struct file *filep, unsigned int cmd,
 				if(LED_FLASH == flash_info.flashtype)
 				{
 					CDBG("tps61310_set_flash enter");
-					rc = tps61310_set_flash(flash_info.ctrl_data.led_state);
+//					rc = tps61310_set_flash(flash_info.ctrl_data.led_state);
 				}
 			}
             /*other flashes*/

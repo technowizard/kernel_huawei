@@ -362,10 +362,11 @@ static inline int msm_flash_ctrl(
 #ifdef CONFIG_HUAWEI_FEATURE_TPS61310
 int tps61310_set_flash(unsigned led_state);
 #else
+/*
 static int tps61310_set_flash(unsigned led_state)
 {
 	return -ENOTSUPP;
-}
+}*/
 #endif
 /* DTS2011091402372   yuguangcai 20110914 end > */
 /* Below functions are added for V4L2 kernel APIs */

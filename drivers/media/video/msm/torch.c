@@ -119,7 +119,7 @@ static long hw_camera_led_ioctl(struct file *filep, unsigned int cmd, unsigned l
             /* U8680 and U8730 use tps61310 flash driver IC, so set led with tps61310 function */
             if (machine_is_msm8255_u8680() || machine_is_msm8255_u8730())
             {
-                tps61310_set_flash(camera_led_state);
+//                tps61310_set_flash(camera_led_state);
             }
             else
             {
