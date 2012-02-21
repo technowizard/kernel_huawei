@@ -267,12 +267,12 @@ static int msm_voice_put(struct snd_kcontrol *kcontrol,
 	tx_dev_id = ucontrol->value.integer.value[1];
   
 	// replace headset mic with speaker_mono_tx (speakerphone mic)
-	if (headset_mic_switch && tx_dev_id == 3)
-	  tx_dev_id = 12;
+//	if (headset_mic_switch && tx_dev_id == 3)
+//	  tx_dev_id = 12;
 	
 	// replace speaker_dual_mic_broadside_tx dev_id:15 with speaker_mono_tx (12)
-	if (speakerphone_echo_fix && tx_dev_id == 15)
-	  tx_dev_id = 12;
+//	if (speakerphone_echo_fix && tx_dev_id == 15)
+//	  tx_dev_id = 12;
 	
 	tx_dev_info = audio_dev_ctrl_find_dev(tx_dev_id);
 
@@ -339,12 +339,12 @@ static int msm_device_put(struct snd_kcontrol *kcontrol,
 	route_cfg.dev_id = ucontrol->id.numid - device_index;
 	
 	// replace headset mic (3) with speaker_mono_tx (10)
-	if (headset_mic_switch && route_cfg.dev_id == 3)
-	  route_cfg.dev_id=10;
+//	if (headset_mic_switch && route_cfg.dev_id == 3)
+//	  route_cfg.dev_id=10;
 	
 	// replace speaker_dual_mic_broadside_tx dev_id:12 with speaker_mono_tx (10)
-	if (speakerphone_echo_fix && route_cfg.dev_id==12)
-	  route_cfg.dev_id=10;
+//	if (speakerphone_echo_fix && route_cfg.dev_id==12)
+//	  route_cfg.dev_id=10;
 		
 	dev_info = audio_dev_ctrl_find_dev(route_cfg.dev_id);
 	if (IS_ERR(dev_info)) {
