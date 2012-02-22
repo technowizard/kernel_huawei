@@ -3521,10 +3521,7 @@ static void msm_marimba_shutdown_power(void)
 					__func__, rc);
 	}
 };
-/* < DTS2011030705328 sihongfang 20110311 begin */
-/*bcm4329 do not use this function*/
-#ifdef CONFIG_HUAWEI_KERNEL
-/* DTS2011030705328 sihongfang 20110311 end > */
+
 static int bahama_present(void)
 {
 	int id;
@@ -3683,7 +3680,7 @@ static struct marimba_fm_platform_data marimba_fm_pdata = {
 	.vreg_xo_out = NULL,
 };
 /* < DTS2011030705328 sihongfang 20110311 begin */
-#endif
+
 /* DTS2011030705328 sihongfang 20110311 end > */
 
 /* Slave id address for FM/CDC/QMEMBIST
@@ -3983,9 +3980,7 @@ static struct marimba_platform_data marimba_pdata = {
 	.bahama_core_config = msm_bahama_core_config,
 /* < DTS2011030705328 sihongfang 20110311 begin */
 /*bcm4329 do not use this function*/
-#ifdef CONFIG_HUAWEI_KERNEL
 	.fm = &marimba_fm_pdata,
-#endif
 /* DTS2011030705328 sihongfang 20110311 end > */
 	.codec = &mariba_codec_pdata,
 };
