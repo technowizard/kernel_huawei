@@ -753,34 +753,15 @@ static int synaptics_rmi4_probe(
 		goto err_pdt_read_failed;
 	}
 
-        if (ts->f11_has_Sensitivity_Adjust) {
-                ret =
-                    i2c_smbus_write_byte_data(ts->client, F11_2D_CTRL14,
-                                              SENSITIVE);
-                if (ret < 0) {
-                        printk(KERN_ERR "%s: failed to write err=%d\n",
-                               __FUNCTION__, ret);
-                } else {
-                        TS_DEBUG_RMI("the SENSITIVE is changged ok!\n");
-                }
-        } else {
-                printk(KERN_ERR "the SENSITIVE is failed to changge!\n");
-        }
-        ret =
-            i2c_smbus_write_byte_data(ts->client, F11_2D_CTRL00,
-                                      REPORTING_MODE);
-        if (ret < 0) {
-                printk(KERN_ERR "%s: ReportingMode failed to write err=%d\n",
-                       __FUNCTION__, ret);
-        } else {
-                TS_DEBUG_RMI("the ReportingMode is changged ok!\n");
-        }
-
+	// Change the mimimum delta value for a touch to be reported.
+	// these addresses were found by trial and error!
+	ret = i2c_smbus_write_byte_data(ts->client, 41 ,4);
+	ret = i2c_smbus_write_byte_data(ts->client, 42 ,4);
 
 	
 	//create the right file used for update
+        g_client = client;
 	#ifdef CONFIG_SYNAPTICS_UPDATE_RMI_TS_FIRMWARE
-	g_client = client;
 	for (i = 0 ; i < 3; i++) 
 	{
 		ret= ts_firmware_file(); 
@@ -1546,6 +1527,26 @@ static void __exit synaptics_rmi4_exit(void)
 	if (synaptics_wq)
 		destroy_workqueue(synaptics_wq);
 }
+
+static int set_sens(const char *val, struct kernel_param *kp) {
+	int v;
+	char *e;
+	int ret;
+
+	v=simple_strtoul(val, &e, 10);
+        ret = i2c_smbus_write_byte_data(ts->client, 41 ,v);
+        ret = i2c_smbus_write_byte_data(ts->client, 42 ,v);
+
+        return 0;
+}
+
+static int get_sens(char *buffer, struct kernel_param *kp) {
+	int v;
+	v=i2c_smbus_read_byte_data(ts->client, 41 );
+        return sprintf(buffer,"%x",v);
+}
+
+module_param_call(sensitivity, set_sens, get_sens, NULL, S_IWUSR | S_IRUSR);
 
 module_init(synaptics_rmi4_init);
 module_exit(synaptics_rmi4_exit);
