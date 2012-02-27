@@ -118,11 +118,11 @@ static struct clkctl_acpu_speed acpu_freq_tbl[] = {
 	{ 0, 61440,  PLL_3,    5, 11, 61440000,  900, VDD_RAW(900) },
 	{ 1, 122880, PLL_3,    5, 5,  61440000,  900, VDD_RAW(900) },
 	{ 0, 184320, PLL_3,    5, 4,  61440000,  900, VDD_RAW(900) },
-	{ 1, MAX_AXI_KHZ, SRC_AXI, 1, 0, 61440000, 900, VDD_RAW(900) },
+	{ 0, MAX_AXI_KHZ, SRC_AXI, 1, 0, 61440000, 900, VDD_RAW(900) },
 	{ 1, 245760, PLL_3,    5, 2,  61440000,  900, VDD_RAW(900) },
 	{ 1, 368640, PLL_3,    5, 1,  122800000, 900, VDD_RAW(900) },
-	{ 1, 480000,  PLL_2,    3, 0,    122800000, 900,  VDD_RAW(900),  &pll2_tbl[0]},
-	{ 1, 600000,  PLL_2,    3, 0,    122800000, 925,  VDD_RAW(925),  &pll2_tbl[1]},
+	{ 0, 480000,  PLL_2,    3, 0,    122800000, 900,  VDD_RAW(900),  &pll2_tbl[0]},
+	{ 0, 600000,  PLL_2,    3, 0,    122800000, 925,  VDD_RAW(925),  &pll2_tbl[1]},
 	/* AXI has MSMC1 implications. See above. */
 	{ 1, 768000, PLL_1,    2, 0,  153600000, 1050, VDD_RAW(1050) },
 	/*
@@ -476,20 +476,21 @@ void __init pll2_fixup(void)
 	struct clkctl_acpu_speed *speed = acpu_freq_tbl;
 #ifndef CONFIG_ACPUCLOCK_OVERCLOCKING
 	u8 pll2_l = readl(PLL2_L_VAL_ADDR) & 0xFF;
+	for ( ; speed->acpu_clk_khz; speed++) {
+                if (speed->src != PLL_2)
+                        backup_s = speed;
+                if (speed->pll_rate && speed->pll_rate->l == pll2_l) {
+                        speed++;
+                        speed->acpu_clk_khz = 0;
+                        return;
+                }
+        }
 #else
-	u8 pll2_l = 79;
-#endif
-
 	for ( ; speed->acpu_clk_khz; speed++) {
 		if (speed->src != PLL_2)
 			backup_s = speed;
-		if (speed->pll_rate && speed->pll_rate->l == pll2_l) {
-			speed++;
-			speed->acpu_clk_khz = 0;
-			return;
-		}
-	}
-
+	}	
+#endif
 
 	pr_err("Unknown PLL2 lval %d\n", pll2_l);
 	BUG();

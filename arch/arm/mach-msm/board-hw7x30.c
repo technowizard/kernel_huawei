@@ -147,14 +147,14 @@ struct vreg *vreg_gp4 = NULL;
 /* DTS2011093001643 lijianzhao 20110930 end >*/
 /*DTS2011082405478 zhudengkui 20110913 begin */
 //modify PMEM from 23M to 36M
-#define MSM_PMEM_SF_SIZE	0x2400000
+#define MSM_PMEM_SF_SIZE	0x1800000
 /* DTS2011082405478 zhudengkui 20110913 end>*/
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
 /* 1024 x 600 x 4(bpp) x 3(pages) */
-#define MSM_FB_SIZE     0x708000
+#define MSM_FB_SIZE     0x480000
 #else
 /* 1024 x 600 x 4(bpp) x 2(pages) */
-#define MSM_FB_SIZE		0x500000
+#define MSM_FB_SIZE		0x300000
 #endif
  /*< DTS2011062504321 songxiaoming 20110625 begin */
  /*<DTS2010102803387 penghai 20101028 begin*/
