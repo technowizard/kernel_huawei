@@ -370,6 +370,25 @@ char *get_compass_gs_position_name(void)
 	return position_name;
 	
 }
+/*
+#define MSM_RAM_CONSOLE_SIZE 128*1024
+
+static struct resource ram_console_resources[] = {
+        {
+                .start  = 0,
+                .end    = 0,
+                .flags  = IORESOURCE_MEM,
+        },
+};
+
+static struct platform_device ram_console_device = {
+        .name           = "ram_console",
+        .id             = -1,
+        .num_resources  = ARRAY_SIZE(ram_console_resources),
+        .resource       = ram_console_resources,
+};
+*/
+
 /* DTS2011042703449  liujinggang 20110427 end > */
 
 static int pm8058_gpios_init(void)
@@ -6886,6 +6905,7 @@ static struct platform_device *devices[] __initdata = {
 	/* <DTS2010072202961 hufeng 20100722 begin */
 	/* removed several lines */
 	/* DTS2010072202961 hufeng 20100722 end> */
+//        &ram_console_device,
 #ifdef CONFIG_USB_FUNCTION
 	&msm_device_hsusb_peripheral,
 	&mass_storage_device,
@@ -9632,6 +9652,7 @@ static void __init msm7x30_allocate_memory_regions(void)
 	pr_info("allocating %lu bytes at %p (%lx physical) for fb\n",
 		size, addr, __pa(addr));
 
+
 	size = pmem_audio_size;
 	if (size) {
 		addr = alloc_bootmem(size);
@@ -9670,6 +9691,15 @@ static void __init msm7x30_allocate_memory_regions(void)
 		pr_info("allocating %lu bytes at %p (%lx physical) for adsp "
 			"pmem arena\n", size, addr, __pa(addr));
 	}
+/* looks like all ram is zeroed on boot so this can't work. */
+/*
+	size = MSM_RAM_CONSOLE_SIZE;
+        addr = alloc_bootmem(size);
+        ram_console_resources[0].start=0x10000000-MSM_RAM_CONSOLE_SIZE; //__pa(addr);
+        ram_console_resources[0].end =ram_console_resources[0].start + size - 1;
+        pr_info("allocating %lu bytes at %p (%lx physical) for ram_console\n",
+                size, addr, __pa(addr));
+*/
 }
 
 static void __init msm7x30_map_io(void)

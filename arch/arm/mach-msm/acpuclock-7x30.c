@@ -485,15 +485,14 @@ void __init pll2_fixup(void)
                         return;
                 }
         }
+        pr_err("Unknown PLL2 lval %d\n", pll2_l);
+        BUG();
 #else
 	for ( ; speed->acpu_clk_khz; speed++) {
 		if (speed->src != PLL_2)
 			backup_s = speed;
 	}	
 #endif
-
-	pr_err("Unknown PLL2 lval %d\n", pll2_l);
-	BUG();
 }
 
 #define RPM_BYPASS_MASK	(1 << 3)
