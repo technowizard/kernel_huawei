@@ -839,7 +839,7 @@ int write_power_config(int on)
 /* < DTS2010083103149 zhangtao 20100909 begin */
 		/* < DTS2011042106137 zhangtao 20110509 begin */
         /* < DTS2011062404739 cuiyu 20110624 begin */
-	    *(tmp + 1) = 16; //0xff//Active Acquisition
+	    *(tmp + 1) = 14; //0xff//Active Acquisition
         /* DTS2011062404739 cuiyu 20110624 end > */
 		/* DTS2011042106137 zhangtao 20110509 end > */
 /* DTS2010083103149 zhangtao 20100909 end > */
@@ -915,8 +915,8 @@ int write_acquisition_config(u8 instance,int flag)
     {
         /* < DTS2011062404739 cuiyu 20110624 begin */	
         /* shut down calibration */
-    	*(tmp + 6) = 0; //0x0a//ATCHCALST
-    	*(tmp + 7) = 1; //0x0f//ATCHCALSTHR
+    	*(tmp + 6) = 5; //0x0a//ATCHCALST
+    	*(tmp + 7) = 40; //0x0f//ATCHCALSTHR
         /* DTS2011062404739 cuiyu 20110624 end > */
 /*<BU5D09283 luojianhong 20100506 end*/
     }
@@ -1050,7 +1050,7 @@ int write_multitouchscreen_config(u8 instance,int flag)
     {
         /* < DTS2011062404739 cuiyu 20110624 begin */
         /* effect atch vaule */
-    	*(tmp + 7) = 20; //0x1d; //tchthr
+    	*(tmp + 7) = 50; //0x1d; //tchthr
         /* DTS2011062404739 cuiyu 20110624 end > */
     }
     else
