@@ -161,7 +161,7 @@ struct vreg *vreg_gp4 = NULL;
  /*<DTS2010090400203 penghai 20100904 begin*/
  /*<DTS2010082702166 penghai 20100827 begin*/
 /*add dsp memory space for video*/
-#define MSM_PMEM_ADSP_SIZE      0x1800000
+#define MSM_PMEM_ADSP_SIZE      0x2400000
 /*DTS2010082702166 penghai 20100827 end>*/
 /*DTS2010090400203 penghai 20100904 end>*/
 /*DTS2010102803387 penghai 20101028 end>*/
