@@ -57,7 +57,7 @@
 #include "msm_sdcc.h"
 
 /* < DTS2010111804286  hanshirong 20101118 begin */
-#define SDCC_WIFI_SLOT		3
+#define SDCC_WIFI_SLOT		-1
 /* DTS2010111804286  hanshirong 20101118 end > */
 /*< DTS2011082604240 genghua 20110826 begin */
 /* delete the modification of DTS2011072106993 
