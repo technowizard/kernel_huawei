@@ -670,7 +670,21 @@ static int aps_12d_probe(
 /* <DTS2010100800714 liugaofei 20101008 begin */
 	int i;
 /* DTS2010100800714 liugaofei 20101008 end */
+	int gpio_config;
 	
+/*
+    ret = gpio_request(131, "gpio 131 for aps12d");
+    gpio_config = GPIO_CFG(131, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA);
+    ret = gpio_tlmm_config(gpio_config, GPIO_CFG_ENABLE);
+    ret = gpio_direction_output(131,1);
+*/
+    ret = gpio_request(130, "gpio 130 for aps12d");
+    gpio_config = GPIO_CFG(130, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA);
+    ret = gpio_tlmm_config(gpio_config, GPIO_CFG_ENABLE);
+    ret = gpio_direction_output(130,0);
+
+
+
     vreg_gp4 = vreg_get(NULL, VREG_GP4_NAME);
     /* < DTS2010061200552 zhangtao 20100612 begin */
     if (IS_ERR(vreg_gp4)) 
