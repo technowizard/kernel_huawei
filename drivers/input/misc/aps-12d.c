@@ -666,7 +666,7 @@ static int aps_12d_probe(
 	/*the aps_12d sensors ispower on*/
 	/* <BU5D07679 zhangtao 20100413 begin */
 	struct vreg *vreg_gp4=NULL;
-	int rc;
+	int rc=0;
 /* <DTS2010100800714 liugaofei 20101008 begin */
 	int i;
 /* DTS2010100800714 liugaofei 20101008 end */
@@ -695,14 +695,14 @@ static int aps_12d_probe(
 
     /* <DTS2011012600839 liliang 20110215 begin */
     /* set gp4 voltage as 2700mV for all */
-    rc = vreg_set_level(vreg_gp4,VREG_GP4_VOLTAGE_VALUE_2700);
+    // rc = vreg_set_level(vreg_gp4,VREG_GP4_VOLTAGE_VALUE_2700);
     /* <DTS2011012600839 liliang 20110215 end >*/
     
 	if (rc) {
 		PROXIMITY_DEBUG("%s: vreg_gp4  vreg_set_level failed \n", __func__);
 		return rc;
 	}
-	rc = vreg_enable(vreg_gp4);
+//	rc = vreg_enable(vreg_gp4);
 	if (rc) {
 		pr_err("%s: vreg_gp4    vreg_enable failed \n", __func__);
 		return rc;
@@ -871,7 +871,7 @@ err_check_functionality_failed:
 	{
 	    /* < DTS2011052101089 shenjinming 20110521 begin */
         /* can't use the flag ret here, it will change the return value of probe function */
-        vreg_disable(vreg_gp4);
+//        vreg_disable(vreg_gp4);
         /* delete a line */
         /* DTS2011052101089 shenjinming 20110521 end > */
 	}
