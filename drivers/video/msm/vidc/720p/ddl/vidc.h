@@ -2560,6 +2560,8 @@ void vidc_720p_decode_setpassthrough_start(u32 pass_startaddr);
 #undef VIDC_REGISTER_LOG_MSG
 #undef VIDC_REGISTER_LOG_INTO_BUFFER
 
+//#define VIDC_REGISTER_LOG_MSG
+
 #ifdef VIDC_REGISTER_LOG_MSG
 #define VIDC_MSG1(msg_format, a) printk(KERN_INFO msg_format, a)
 #define VIDC_MSG2(msg_format, a, b) printk(KERN_INFO msg_format, a, b)

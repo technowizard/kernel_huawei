@@ -57,7 +57,7 @@
 #ifdef PROXIMITY_DB
 #define PROXIMITY_DEBUG(fmt, args...) printk(KERN_INFO fmt, ##args)
 #else
-#define PROXIMITY_DEBUG(fmt, args...)
+#define PROXIMITY_DEBUG(fmt, args...) APS_DBG(fmt, ##args)
 #endif
 
 #ifndef abs
@@ -658,9 +658,9 @@ static enum hrtimer_restart aps_timer_func(struct hrtimer *timer)
 
 /*<BU5D08118 zhangtao 20100419 begin*/
 static int aps_12d_probe(
-	
+
 	struct i2c_client *client, const struct i2c_device_id *id)
-{	
+{
 	int ret;
 	struct aps_data *aps;
 	/*the aps_12d sensors ispower on*/
@@ -670,19 +670,6 @@ static int aps_12d_probe(
 /* <DTS2010100800714 liugaofei 20101008 begin */
 	int i;
 /* DTS2010100800714 liugaofei 20101008 end */
-//	int gpio_config;
-	
-/*
-    ret = gpio_request(131, "gpio 131 for aps12d");
-    gpio_config = GPIO_CFG(131, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA);
-    ret = gpio_tlmm_config(gpio_config, GPIO_CFG_ENABLE);
-    ret = gpio_direction_output(131,1);
-*/
-//    ret = gpio_request(130, "gpio 130 for aps12d");
-//    gpio_config = GPIO_CFG(130, 0, GPIO_CFG_OUTPUT, GPIO_CFG_NO_PULL, GPIO_CFG_2MA);
-//    ret = gpio_tlmm_config(gpio_config, GPIO_CFG_ENABLE);
-//    ret = gpio_direction_output(130,1);
-
 
 
     vreg_gp4 = vreg_get(NULL, VREG_GP4_NAME);
@@ -746,14 +733,16 @@ static int aps_12d_probe(
 
 	/* < DTS2010081803338 zhangtao 20100818 begin */
 	/* make the rang smaller can make the ir changge bigger */
-	ret = aps_i2c_reg_write(aps, APS_12D_REG_CMD2, \
-/* < DTS2010102103994 zhangtao 20101112 begin */
-	                         (uint8_t)(APS_12D_IRDR_SEL_50MA << 6 | \
-	                                   APS_12D_FREQ_SEL_DC << 4 | \
-	                                   APS_12D_RES_SEL_12 << 2 | \
-	                                   APS_12D_RANGE_SEL_ALS_1000));
-/* DTS2010102103994 zhangtao 20101112 end > */
-	/* DTS2010081803338 zhangtao 20100818 end > */
+        ret=-1;
+        for(i=0;i<10 && ret!=0;i++) {
+                ret = aps_i2c_reg_write(aps, APS_12D_REG_CMD2, \
+                                 (uint8_t)(APS_12D_IRDR_SEL_50MA << 6 | \
+                                           APS_12D_FREQ_SEL_DC << 4 | \
+                                           APS_12D_RES_SEL_12 << 2 | \
+                                           APS_12D_RANGE_SEL_ALS_1000));
+                printk("aps_12d_probe try %d\n",i);
+                mdelay(5);
+        }
 	if(ret < 0)
 	{
 		goto err_detect_failed;

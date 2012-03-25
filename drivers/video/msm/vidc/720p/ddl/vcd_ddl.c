@@ -477,6 +477,7 @@ u32 ddl_encode_frame(u32 *ddl_handle,
 	    ddl->codec_data.encoder.input_buf_req.sz !=
 	    input_frame->vcd_frm.data_len) {
 		VIDC_LOGERR_STRING("ddl_enc_frame:Bad_input_params");
+//		printk("sz %d dl %d\n", ddl->codec_data.encoder.input_buf_req.sz, input_frame->vcd_frm.data_len);
 		return VCD_ERR_ILLEGAL_PARM;
 	}
 	if ((((u32) input_frame->vcd_frm.physical +
