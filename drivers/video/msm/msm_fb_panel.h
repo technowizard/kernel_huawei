@@ -51,6 +51,7 @@ typedef enum {
 typedef enum {
 	DISPLAY_1 = 0,		/* attached as first device */
 	DISPLAY_2,		/* attached on second device */
+	DISPLAY_3,              /* attached on third writeback device */
 	MAX_PHYS_TARGET_NUM,
 } DISP_TARGET_PHYS;
 
@@ -80,6 +81,7 @@ struct lcdc_panel_info {
 
 struct mddi_panel_info {
 	__u32 vdopkt;
+	boolean is_type1;
 };
 
 struct mipi_panel_info {
@@ -175,15 +177,7 @@ struct msm_fb_panel_data {
 	/* function entry chain */
 	int (*on) (struct platform_device *pdev);
 	int (*off) (struct platform_device *pdev);
-#ifdef CONFIG_FB_DYNAMIC_GAMMA
-    int (*set_dynamic_gamma) (enum danymic_gamma_mode gamma_mode);
-#endif
-#ifdef CONFIG_FB_AUTO_CABC
-    int (*config_cabc) (struct msmfb_cabc_config cabc_cfg);
-#endif
-#ifdef CONFIG_HUAWEI_KERNEL
-    int (*set_cabc_brightness) (uint32 brightness);
-#endif
+	int (*power_ctrl) (boolean enable);
 	struct platform_device *next;
 	int (*clk_func) (int enable);
 };

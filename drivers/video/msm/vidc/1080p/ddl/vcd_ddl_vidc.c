@@ -256,6 +256,10 @@ void ddl_vidc_decode_init_codec(struct ddl_client_context *ddl)
 			VIDC_SM_RECOVERY_POINT_SEI);
 	ddl_context->vidc_decode_seq_start[ddl->command_channel](
 		&seq_start_param);
+
+	vidc_sm_set_decoder_stuff_bytes_consumption(
+		&ddl->shared_mem[ddl->command_channel],
+		VIDC_SM_NUM_STUFF_BYTES_CONSUME_NONE);
 }
 
 void ddl_vidc_decode_dynamic_property(struct ddl_client_context *ddl,
@@ -541,7 +545,8 @@ void ddl_vidc_encode_init_codec(struct ddl_client_context *ddl)
 	vidc_sm_set_extended_encoder_control(&ddl->shared_mem
 		[ddl->command_channel], hdr_ext_control,
 		r_cframe_skip, false, 0,
-		h263_cpfc_enable);
+		h263_cpfc_enable, encoder->sps_pps.sps_pps_for_idr_enable_flag,
+		encoder->closed_gop);
 	vidc_sm_set_encoder_init_rc_value(&ddl->shared_mem
 		[ddl->command_channel],
 		encoder->target_bit_rate.target_bitrate);
@@ -818,7 +823,8 @@ u32 ddl_vidc_decode_set_buffers(struct ddl_client_context *ddl)
 	if (vidc_msg_timing)
 		ddl_set_core_start_time(__func__, DEC_OP_TIME);
 	ddl_decoder_dpb_transact(decoder, NULL, DDL_DPB_OP_INIT);
-	ddl_decoder_dpb_init(ddl);
+	if (ddl_decoder_dpb_init(ddl) == VCD_ERR_FAIL)
+		return VCD_ERR_FAIL;
 	DDL_MSG_LOW("ddl_state_transition: %s ~~> DDL_CLIENT_WAIT_FOR_DPBDONE",
 	ddl_get_state_string(ddl->client_state));
 	ddl->client_state = DDL_CLIENT_WAIT_FOR_DPBDONE;
@@ -846,6 +852,7 @@ u32 ddl_vidc_decode_set_buffers(struct ddl_client_context *ddl)
 				ddl_context->dram_base_a, ddl->shared_mem
 				[ddl->command_channel]);
 	init_buf_param.dpb_count = decoder->dp_buf.no_of_dec_pic_buf;
+	init_buf_param.dmx_disable = decoder->dmx_disable;
 	ddl_context->vidc_decode_init_buffers[ddl->command_channel] (
 		&init_buf_param);
 	return VCD_S_SUCCESS;
@@ -892,6 +899,9 @@ void ddl_vidc_decode_frame_run(struct ddl_client_context *ddl)
 	dec_param.release_dpb_bit_mask = dpb_mask->hw_mask;
 	dec_param.decode = VIDC_1080P_DEC_TYPE_FRAME_DATA;
 	dec_param.dpb_count = decoder->dp_buf.no_of_dec_pic_buf;
+	dec_param.dmx_disable = decoder->dmx_disable;
+	if (decoder->dmx_disable)
+		ddl_fill_dec_desc_buffer(ddl);
 	if (decoder->flush_pending) {
 		dec_param.dpb_flush = true;
 		decoder->flush_pending = false;

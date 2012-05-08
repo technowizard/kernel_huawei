@@ -176,10 +176,12 @@ void cabc_backlight_set(struct msm_fb_data_type * mfd)
    /* backlight ctrl by LCD-self, like as CABC */
     up(&mfd->sem);
     pdata = (struct msm_fb_panel_data *)mfd->pdev->dev.platform_data;
+/*
     if ((pdata) && (pdata->set_cabc_brightness))
     {
         pdata->set_cabc_brightness(bl_level);
     }
+*/
     down(&mfd->sem);
 }
 

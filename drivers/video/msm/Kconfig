@@ -257,6 +257,11 @@ config FB_MSM_MIPI_TOSHIBA_VIDEO_WSVGA_PT
 	select FB_MSM_MIPI_DSI_TOSHIBA
 	default n
 
+config FB_MSM_MIPI_TOSHIBA_VIDEO_WUXGA
+	bool
+	select FB_MSM_MIPI_DSI_TOSHIBA
+	default n
+
 config FB_MSM_MIPI_NOVATEK_VIDEO_QHD_PT
 	bool
 	select FB_MSM_MIPI_DSI_NOVATEK
@@ -300,6 +305,13 @@ config FB_MSM_OVERLAY0_WRITEBACK
         bool "MDP overlay0 write back mode enable"
 	---help---
 	  Support for MDP4 OVERLAY0 write back mode
+
+
+config FB_MSM_OVERLAY1_WRITEBACK
+        depends on FB_MSM_OVERLAY
+        bool "MDP overlay1 write back mode enable"
+        ---help---
+          Support for MDP4 OVERLAY1 write back mode
 
 config FB_MSM_WRITEBACK_MSM_PANEL
 	depends on FB_MSM_OVERLAY
@@ -401,6 +413,7 @@ config FB_MSM_MIPI_PANEL_DETECT
 	bool "MIPI Panel Detect"
 	select FB_MSM_MIPI_TOSHIBA_VIDEO_WVGA_PT
 	select FB_MSM_MIPI_TOSHIBA_VIDEO_WSVGA_PT
+	select FB_MSM_MIPI_TOSHIBA_VIDEO_WUXGA
 	select FB_MSM_MIPI_RENESAS_VIDEO_FWVGA_PT
 	select FB_MSM_MIPI_RENESAS_CMD_FWVGA_PT
 	select FB_MSM_MIPI_TRULY_VIDEO_WVGA_PT
@@ -469,6 +482,12 @@ config FB_MSM_MDDI_TOSHIBA_WVGA
 	---help---
 	  Support for MDDI Toshiba (800x480) WVGA panel
 
+config FB_MSM_MDDI_NT35582_WVGA
+	bool "MDDI NT35582 WVGA panel"
+	select FB_MSM_MDDI
+	---help---
+	  Support for MDDI NT35582 (480x800) WVGA panel
+
 config FB_MSM_MDDI_SHARP_QVGA_128x128
 	bool "MDDI Sharp QVGA Dual Panel"
 	select FB_MSM_MDDI
@@ -482,6 +501,10 @@ config FB_MSM_MIPI_TOSHIBA_VIDEO_WVGA_PT_PANEL
 config FB_MSM_MIPI_TOSHIBA_VIDEO_WSVGA_PT_PANEL
 	bool "MIPI Toshiba WSVGA PT Panel"
 	select FB_MSM_MIPI_TOSHIBA_VIDEO_WSVGA_PT
+
+config FB_MSM_MIPI_TOSHIBA_VIDEO_WUXGA_PANEL
+	bool "MIPI Toshiba WUXGA (1920x1200) Panel"
+	select FB_MSM_MIPI_TOSHIBA_VIDEO_WUXGA
 
 config FB_MSM_MIPI_NOVATEK_VIDEO_QHD_PT_PANEL
 	bool "MIPI NOVATEK VIDEO QHD PT Panel"
@@ -518,6 +541,7 @@ config FB_MSM_EBI2_TMD_QVGA_EPSON_QCIF
 	  Support for EBI2 TMD QVGA (240x320) and Epson QCIF (176x220) panel
 
 config FB_MSM_HDMI_AS_PRIMARY
+	depends on FB_MSM_HDMI_COMMON
 	bool "Use HDMI as primary panel"
 	---help---
 	Support for using HDMI as primary
@@ -628,6 +652,15 @@ config FB_MSM_HDMI_MSM_PANEL_CEC_SUPPORT
 	  Support for HDMI CEC Feature
 	  Choose to enable CEC
 
+config FB_MSM_HDMI_MHL
+	depends on FB_MSM_HDMI_MSM_PANEL
+	bool 'HDMI to MHL support'
+	default n
+	---help---
+	  Support the HDMI to MHL conversion.
+	  MHL (Mobile High-Definition Link) technology
+	  uses USB connector to output HDMI content
+
 choice
 	depends on  (FB_MSM_MDP22 || FB_MSM_MDP31 || FB_MSM_MDP40)
 	prompt "TVOut Region"
@@ -715,18 +748,5 @@ config FB_MSM_DEFAULT_DEPTH_RGBA8888
 	bool "32 bits per pixel (RGBA8888)"
 
 endchoice
-
-#/* add the code for dynamic gamma function */
-config FB_DYNAMIC_GAMMA
-	bool "Support for DYNAMIC_GAMMA fuction of glory"
-	depends on FB_MSM
-#/* change default state to 'n', move this config to hw7x30_defconfig */
-	default n
-
-#/* Add code for automatic CABC function */
-config FB_AUTO_CABC
-	bool "Support for AUTO_CABC fuction"
-	depends on FB_MSM
-	default n
 
 endif
