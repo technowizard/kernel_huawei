@@ -145,6 +145,7 @@ int mddi_multi_register_write(uint32 reg,uint32 value)
 	return ret;
 }
 */
+extern struct semaphore mdp_pipe_ctrl_mutex;
 int process_lcd_table(struct sequence *table, size_t count, lcd_panel_type lcd_panel)
 {
 	unsigned int i;
@@ -166,16 +167,16 @@ int process_lcd_table(struct sequence *table, size_t count, lcd_panel_type lcd_p
 			case LCD_NT35510_ALPHA_SI_WVGA:
 			case LCD_NT35560_TOSHIBA_FWVGA:
 			case LCD_NT35510_ALPHA_SI_WVGA_TYPE2:
-//                down(&mdp_pipe_ctrl_mutex);
-//                clk_on = pmdh_clk_func(2);
-//                pmdh_clk_func(1);
+                down(&mdp_pipe_ctrl_mutex);
+                clk_on = pmdh_clk_func(2);
+                pmdh_clk_func(1);
 				/* MDDI port to write the reg and value */
 				ret = mddi_queue_register_write(reg,value,TRUE,0);
-//                if (clk_on == 0)
-//                {
-//                    pmdh_clk_func(0);
-//                }
-//                up(&mdp_pipe_ctrl_mutex);
+                if (clk_on == 0)
+                {
+                    pmdh_clk_func(0);
+                }
+                up(&mdp_pipe_ctrl_mutex);
 				break;
 			case LCD_RSP61408_CHIMEI_WVGA:
 /*

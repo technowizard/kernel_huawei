@@ -9,6 +9,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ * 02110-1301, USA.
+ *
  */
 
 #include <linux/module.h>
@@ -25,7 +30,11 @@
 #include "msm_fb_panel.h"
 #include "mddihost.h"
 #include "mddihosti.h"
-
+/*< DTS2010120703279 lijianzhao 20101207 begin */
+#ifdef CONFIG_HUAWEI_KERNEL
+#include "hw_mddi_lcd.h"
+#endif
+/* DTS2010120703279 lijianzhao 20101207 end >*/
 #define FEATURE_MDDI_UNDERRUN_RECOVERY
 #ifndef FEATURE_MDDI_DISABLE_REVERSE
 static void mddi_read_rev_packet(byte *data_ptr);
@@ -75,7 +84,12 @@ boolean mddi_debug_clear_rev_data = TRUE;
 uint32 *mddi_reg_read_value_ptr;
 
 mddi_client_capability_type mddi_client_capability_pkt;
+/*<DTS2011060400761 fengwei 20110604 begin*/
+/*close Mddi Reverse link for reslove blankscreen*/
+#ifndef FEATURE_MDDI_DISABLE_REVERSE
 static boolean mddi_client_capability_request = FALSE;
+#endif
+/*DTS2011060400761 fengwei 20110604 end>*/
 
 #ifndef FEATURE_MDDI_DISABLE_REVERSE
 
@@ -1076,8 +1090,6 @@ static void mddi_process_rev_packets(void)
 				if (mddi_enable_reg_read_retry_once)
 					mddi_reg_read_retry =
 					    mddi_reg_read_retry_max;
-				else
-					mddi_reg_read_retry++;
 				pmhctl->rev_state = MDDI_REV_REG_READ_SENT;
 				pmhctl->stats.reg_read_failure++;
 			} else {
@@ -1443,7 +1455,14 @@ static void mddi_host_initialize_registers(mddi_host_type host_idx)
 {
 	uint32 pad_reg_val;
 	mddi_host_cntl_type *pmhctl = &(mhctl[host_idx]);
-
+/*< DTS2010120703279 lijianzhao 20101207 begin */
+	mddi_type mddi_port_type = mddi_port_type_probe();
+/* DTS2010120703279 lijianzhao 20101207 end >*/
+/*< DTS2011022700231 lijianzhao 20110227 begin */
+#ifdef CONFIG_HUAWEI_KERNEL
+	lcd_panel_type lcd_panel_wvga=lcd_panel_probe();
+#endif
+/* DTS2011022700231 lijianzhao 20110227 end >*/
 	if (pmhctl->driver_state == MDDI_DRIVER_ENABLED)
 		return;
 
@@ -1461,19 +1480,66 @@ static void mddi_host_initialize_registers(mddi_host_type host_idx)
 
 	/* Subframes per media frames register (= 0x03) */
 	mddi_host_reg_out(SPM, 0x0003);
+/*< DTS2010120703279 lijianzhao 20101207 begin */
+/* Config MDDI host register according to MDDI type */
+#ifdef CONFIG_HUAWEI_KERNEL
+	if(MDDI_TYPE2 == mddi_port_type)
+	{
+		/* Turn Around 1 register (= 0x10) */
+		mddi_host_reg_out(TA1_LEN, 0x0010);
 
+		/* Turn Around 2 register (= 0x40) */
+		mddi_host_reg_out(TA2_LEN, 0x0040);
+		
+		
+	}
+	else if(MDDI_TYPE1 == mddi_port_type)
+	{
+		/* Turn Around 1 register (= 0x05) */
+		mddi_host_reg_out(TA1_LEN, 0x0005);
+
+		/* Turn Around 2 register (= 0x0C) */
+		mddi_host_reg_out(TA2_LEN, MDDI_HOST_TA2_LEN);
+	}
+	else
+	{
+		/* Turn Around 1 register (= 0x05) */
+		mddi_host_reg_out(TA1_LEN, 0x0005);
+
+		/* Turn Around 2 register (= 0x0C) */
+		mddi_host_reg_out(TA2_LEN, MDDI_HOST_TA2_LEN);
+		printk(KERN_ERR"%s: Can't match MDDI port type,so use type1 as default\n",__func__);
+	}
+#else
 	/* Turn Around 1 register (= 0x05) */
 	mddi_host_reg_out(TA1_LEN, 0x0005);
 
 	/* Turn Around 2 register (= 0x0C) */
 	mddi_host_reg_out(TA2_LEN, MDDI_HOST_TA2_LEN);
+#endif
+/* DTS2010120703279 lijianzhao 20101207 end >*/
 
+/*< DTS2011022700231 lijianzhao 20110227 begin */
+#ifdef CONFIG_HUAWEI_KERNEL
+/* a_si LCD use as MDDI type1,so must increase high to 800,low to 200 */
+	if(LCD_NT35510_ALPHA_SI_WVGA == lcd_panel_wvga)
+	{
+		mddi_host_reg_out(DRIVE_HI, 0x0320);
+		mddi_host_reg_out(DRIVE_LO, 0x00C8);
+	}
+	else
+	{
+		mddi_host_reg_out(DRIVE_HI, 0x00B4);
+		mddi_host_reg_out(DRIVE_LO, 0x0032);
+	}
+#else
 	/* Drive hi register (= 0x96) */
 	mddi_host_reg_out(DRIVE_HI, 0x0096);
 
 	/* Drive lo register (= 0x32) */
 	mddi_host_reg_out(DRIVE_LO, 0x0032);
-
+#endif
+/* DTS2011022700231 lijianzhao 20110227 end >*/ 
 	/* Display wakeup count register (= 0x3c) */
 	mddi_host_reg_out(DISP_WAKE, 0x003c);
 
@@ -1499,6 +1565,70 @@ static void mddi_host_initialize_registers(mddi_host_type host_idx)
 		mddi_host_reg_out(PAD_CTL, 0x08000);
 		udelay(5);
 	}
+/*< DTS2010120703279 lijianzhao 20101207 begin */
+/* Config MDDI host register according to MDDI type */
+#ifdef CONFIG_HUAWEI_KERNEL
+	if(MDDI_TYPE2 == mddi_port_type)
+	{
+	#ifdef T_MSM7200
+		/* Recommendation from PAD hw team */
+		mddi_host_reg_out(PAD_CTL, 0xa850a);
+	#else
+		/* Recommendation from PAD hw team */
+		mddi_host_reg_out(PAD_CTL, 0x402a850f);
+	#endif
+	/*< DTS2011102804140 qitongliang 20111111 begin */
+	    /* resolve the buddy Lcd displaying unnormally*/
+		if (machine_is_msm8255_u8730())
+		{
+			pad_reg_val = 0x12238020;
+		}
+		else
+		{
+			pad_reg_val = 0x10220020;
+		}
+	/* DTS2011102804140 qitongliang 20111111 end >*/
+		#if defined(CONFIG_FB_MSM_MDP31) || defined(CONFIG_FB_MSM_MDP40)
+			mddi_host_reg_out(PAD_IO_CTL, 0x00320000);
+			mddi_host_reg_out(PAD_CAL, pad_reg_val);
+		#endif	
+	}
+	else if(MDDI_TYPE1 == mddi_port_type)
+	{
+	#ifdef T_MSM7200
+		/* Recommendation from PAD hw team */
+		mddi_host_reg_out(PAD_CTL, 0xa850a);
+	#else
+		/* Recommendation from PAD hw team */
+		mddi_host_reg_out(PAD_CTL, 0xa850f);
+	#endif
+
+		pad_reg_val = 0x00220020;
+
+	#if defined(CONFIG_FB_MSM_MDP31) || defined(CONFIG_FB_MSM_MDP40)
+		mddi_host_reg_out(PAD_IO_CTL, 0x00320000);
+		mddi_host_reg_out(PAD_CAL, pad_reg_val);
+	#endif
+	}
+	else
+	{
+	#ifdef T_MSM7200
+		/* Recommendation from PAD hw team */
+		mddi_host_reg_out(PAD_CTL, 0xa850a);
+	#else
+		/* Recommendation from PAD hw team */
+		mddi_host_reg_out(PAD_CTL, 0xa850f);
+	#endif
+
+		pad_reg_val = 0x00220020;
+
+	#if defined(CONFIG_FB_MSM_MDP31) || defined(CONFIG_FB_MSM_MDP40)
+		mddi_host_reg_out(PAD_IO_CTL, 0x00320000);
+		mddi_host_reg_out(PAD_CAL, pad_reg_val);
+	#endif
+		printk(KERN_ERR"%s: Can't match MDDI port type,so use type1 as default\n",__func__);
+	}
+#else
 #ifdef T_MSM7200
 	/* Recommendation from PAD hw team */
 	mddi_host_reg_out(PAD_CTL, 0xa850a);
@@ -1513,6 +1643,8 @@ static void mddi_host_initialize_registers(mddi_host_type host_idx)
 	mddi_host_reg_out(PAD_IO_CTL, 0x00320000);
 	mddi_host_reg_out(PAD_CAL, pad_reg_val);
 #endif
+#endif
+/* DTS2010120703279 lijianzhao 20101207 end >*/
 
 	mddi_host_core_version = mddi_host_reg_inm(CORE_VER, 0xffff);
 
@@ -1524,10 +1656,23 @@ static void mddi_host_initialize_registers(mddi_host_type host_idx)
 
 	if ((mddi_host_core_version > 8) && (mddi_host_core_version < 0x19))
 		mddi_host_reg_out(TEST, 0x2);
-
+/*< DTS2011022700231 lijianzhao 20110227 begin */
+#ifdef CONFIG_HUAWEI_KERNEL
+/* a_si LCD use as MDDI type1,add 200ns in wake-up diagram */
+	if(LCD_NT35510_ALPHA_SI_WVGA == lcd_panel_wvga)
+	{
+		mddi_host_reg_out(DRIVER_START_CNT, 0x60030);
+	}
+	else
+	{
+		/* Need an even number for counts */
+		mddi_host_reg_out(DRIVER_START_CNT, 0x60006);
+	}
+#else
 	/* Need an even number for counts */
 	mddi_host_reg_out(DRIVER_START_CNT, 0x60006);
-
+#endif
+/* DTS2011022700231 lijianzhao 20110227 end >*/ 
 #ifndef T_MSM7500
 	/* Setup defaults for MDP related register */
 	mddi_host_reg_out(MDP_VID_FMT_DES, 0x5666);

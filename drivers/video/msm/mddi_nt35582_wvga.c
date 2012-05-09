@@ -27,7 +27,7 @@
 #include <linux/pmic8058-pwm.h>
 #endif
 
-#define BL_MAX		230
+#define BL_MAX		255
 
 #ifdef CONFIG_PMIC8058_PWM
 static struct pwm_device *bl_pwm;
@@ -82,14 +82,15 @@ static int __devinit nt35582_probe(struct platform_device *pdev)
 		return 0;
 	}
 
-#ifdef CONFIG_PMIC8058_PWM
+
+#ifdef CONFIG_PMIC8058_PWM_XX
 	bl_pwm = pwm_request(mddi_nt35582_pdata->gpio, "backlight");
 	if (bl_pwm == NULL || IS_ERR(bl_pwm)) {
 		pr_err("%s pwm_request() failed\n", __func__);
 		bl_pwm = NULL;
 	}
 
-	/* Add default sensitivity to make sure screen won't turn off.*/
+	// Add default sensitivity to make sure screen won't turn off.
 	if (bl_pwm) {
 		pwm_config(bl_pwm, DUTY_LEVEL * 150, PWM_PERIOD);
 		pwm_enable(bl_pwm);
@@ -114,7 +115,7 @@ static struct platform_driver this_driver = {
 static struct msm_fb_panel_data nt35582_panel_data = {
 	.on = mddi_nt35582_panel_on,
 	.off = mddi_nt35582_panel_off,
-	.set_backlight = mddi_nt35582_panel_set_backlight,
+//	.set_backlight = mddi_nt35582_panel_set_backlight,
 };
 
 static struct platform_device this_device = {

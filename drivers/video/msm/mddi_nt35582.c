@@ -76,12 +76,14 @@ static lcd_panel_type lcd_panel_wvga = LCD_NONE;
 
 static const struct sequence nt35582_wvga_standby_exit_table[] = 
 {
-	{0x1100,0,50}
+	{0x2900,0,0},
+	{0x1100,0,120}
 };
 
 static const struct sequence nt35582_wvga_standby_enter_table[]= 
 {
-	{0x1000,0,50}
+	{0x1000,0,5},
+	{0x2800,0,0}
 };
 static int nt35582_lcd_on(struct platform_device *pdev)
 {
