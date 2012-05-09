@@ -260,6 +260,9 @@ void libra_sdiocmd52(struct sdio_func *sdio_func_dev, unsigned int addr,
 		sdio_writeb(sdio_func_dev, byte_var[0], addr, err_ret);
 	else
 		byte_var[0] = sdio_readb(sdio_func_dev, addr, err_ret);
+
+//	printk("libra_sdiocmd52 %x %d %d %d\n",addr,byte_var[0],write,*err_ret);
+
 }
 EXPORT_SYMBOL(libra_sdiocmd52);
 
