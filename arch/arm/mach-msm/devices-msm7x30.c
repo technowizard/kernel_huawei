@@ -1174,8 +1174,7 @@ static struct kgsl_device_platform_data kgsl_3d0_pdata = {
 	.num_levels = 3,
 	.set_grp_async = set_grp3d_async,
 	.idle_timeout = HZ/20,
-	.strtstp_sleepwake = true,
-	.nap_allowed = false,
+	.nap_allowed = true,
 	.clk_map = KGSL_CLK_SRC | KGSL_CLK_CORE |
 		KGSL_CLK_IFACE | KGSL_CLK_MEM,
 };
