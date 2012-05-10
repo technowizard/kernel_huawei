@@ -2,7 +2,6 @@
  * drivers/gpu/ion/ion_priv.h
  *
  * Copyright (C) 2011 Google, Inc.
- * Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -139,6 +138,8 @@ struct ion_heap_ops {
 	int (*cache_op)(struct ion_heap *heap, struct ion_buffer *buffer,
 			void *vaddr, unsigned int offset,
 			unsigned int length, unsigned int cmd);
+	unsigned long (*get_allocated)(struct ion_heap *heap);
+	unsigned long (*get_total)(struct ion_heap *heap);
 	int (*map_iommu)(struct ion_buffer *buffer,
 				struct ion_iommu_map *map_data,
 				unsigned int domain_num,
@@ -147,9 +148,7 @@ struct ion_heap_ops {
 				unsigned long iova_length,
 				unsigned long flags);
 	void (*unmap_iommu)(struct ion_iommu_map *data);
-	int (*print_debug)(struct ion_heap *heap, struct seq_file *s);
-	int (*secure_heap)(struct ion_heap *heap);
-	int (*unsecure_heap)(struct ion_heap *heap);
+
 };
 
 /**
@@ -227,12 +226,6 @@ void ion_carveout_heap_destroy(struct ion_heap *);
 struct ion_heap *ion_iommu_heap_create(struct ion_platform_heap *);
 void ion_iommu_heap_destroy(struct ion_heap *);
 
-struct ion_heap *ion_cp_heap_create(struct ion_platform_heap *);
-void ion_cp_heap_destroy(struct ion_heap *);
-
-struct ion_heap *ion_reusable_heap_create(struct ion_platform_heap *);
-void ion_reusable_heap_destroy(struct ion_heap *);
-
 /**
  * kernel api to allocate/free from carveout -- used when carveout is
  * used to back an architecture specific custom heap
@@ -245,30 +238,9 @@ void ion_carveout_free(struct ion_heap *heap, ion_phys_addr_t addr,
 
 struct ion_heap *msm_get_contiguous_heap(void);
 /**
- * The carveout/cp heap returns physical addresses, since 0 may be a valid
+ * The carveout heap returns physical addresses, since 0 may be a valid
  * physical address, this is used to indicate allocation failed
  */
 #define ION_CARVEOUT_ALLOCATE_FAIL -1
-#define ION_CP_ALLOCATE_FAIL -1
-
-/**
- * The reserved heap returns physical addresses, since 0 may be a valid
- * physical address, this is used to indicate allocation failed
- */
-#define ION_RESERVED_ALLOCATE_FAIL -1
-
-/**
- * ion_map_fmem_buffer - map fmem allocated memory into the kernel
- * @buffer - buffer to map
- * @phys_base - physical base of the heap
- * @virt_base - virtual base of the heap
- * @flags - flags for the heap
- *
- * Map fmem allocated memory into the kernel address space. This
- * is designed to be used by other heaps that need fmem behavior.
- * The virtual range must be pre-allocated.
- */
-void *ion_map_fmem_buffer(struct ion_buffer *buffer, unsigned long phys_base,
-				void *virt_base, unsigned long flags);
 
 #endif /* _ION_PRIV_H */

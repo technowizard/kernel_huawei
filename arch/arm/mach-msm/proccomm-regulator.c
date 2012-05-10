@@ -51,7 +51,7 @@ static int _vreg_switch(int vreg_id, bool enable)
 {
 	unsigned _id		= (unsigned)vreg_id;
 	unsigned _enable	= !!enable;
-	printk("vreg_enable(%d,%d)\n",vreg_id,_enable);
+
 	return msm_proc_comm(PCOM_VREG_SWITCH, &_id, &_enable);
 }
 
@@ -95,7 +95,6 @@ static int proccomm_vreg_enable(struct regulator_dev *rdev)
 	int rc;
 
 	ddata = rdev_get_drvdata(rdev);
-	
 	rc = _vreg_switch(rdev_get_id(rdev), VREG_SWITCH_ENABLE);
 
 	if (rc) {

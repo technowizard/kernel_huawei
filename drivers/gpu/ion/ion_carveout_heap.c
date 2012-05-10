@@ -2,7 +2,7 @@
  * drivers/gpu/ion/ion_carveout_heap.c
  *
  * Copyright (C) 2011 Google, Inc.
- * Copyright (c) 2011-2012, Code Aurora Forum. All rights reserved.
+ * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -25,7 +25,6 @@
 #include <linux/slab.h>
 #include <linux/vmalloc.h>
 #include <linux/iommu.h>
-#include <linux/seq_file.h>
 #include "ion_priv.h"
 
 #include <mach/iommu_domains.h>
@@ -37,8 +36,8 @@ struct ion_carveout_heap {
 	ion_phys_addr_t base;
 	unsigned long allocated_bytes;
 	unsigned long total_size;
-	int (*request_region)(void *);
-	int (*release_region)(void *);
+	void (*request_region)(void *);
+	void (*release_region)(void *);
 	atomic_t map_count;
 	void *bus_id;
 };
@@ -110,15 +109,17 @@ struct scatterlist *ion_carveout_heap_map_dma(struct ion_heap *heap,
 					      struct ion_buffer *buffer)
 {
 	struct scatterlist *sglist;
+	struct page *page = phys_to_page(buffer->priv_phys);
+
+	if (page == NULL)
+		return NULL;
 
 	sglist = vmalloc(sizeof(struct scatterlist));
 	if (!sglist)
 		return ERR_PTR(-ENOMEM);
 
 	sg_init_table(sglist, 1);
-	sglist->length = buffer->size;
-	sglist->offset = 0;
-	sglist->dma_address = buffer->priv_phys;
+	sg_set_page(sglist, page, buffer->size, 0);
 
 	return sglist;
 }
@@ -130,55 +131,21 @@ void ion_carveout_heap_unmap_dma(struct ion_heap *heap,
 		vfree(buffer->sglist);
 }
 
-static int ion_carveout_request_region(struct ion_carveout_heap *carveout_heap)
-{
-	int ret_value = 0;
-	if (atomic_inc_return(&carveout_heap->map_count) == 1) {
-		if (carveout_heap->request_region) {
-			ret_value = carveout_heap->request_region(
-						carveout_heap->bus_id);
-			if (ret_value) {
-				pr_err("Unable to request SMI region");
-				atomic_dec(&carveout_heap->map_count);
-			}
-		}
-	}
-	return ret_value;
-}
-
-static int ion_carveout_release_region(struct ion_carveout_heap *carveout_heap)
-{
-	int ret_value = 0;
-	if (atomic_dec_and_test(&carveout_heap->map_count)) {
-		if (carveout_heap->release_region) {
-			ret_value = carveout_heap->release_region(
-						carveout_heap->bus_id);
-			if (ret_value)
-				pr_err("Unable to release SMI region");
-		}
-	}
-	return ret_value;
-}
-
 void *ion_carveout_heap_map_kernel(struct ion_heap *heap,
 				   struct ion_buffer *buffer,
 				   unsigned long flags)
 {
 	struct ion_carveout_heap *carveout_heap =
 		container_of(heap, struct ion_carveout_heap, heap);
-	void *ret_value;
 
-	if (ion_carveout_request_region(carveout_heap))
-		return NULL;
+	if (atomic_inc_return(&carveout_heap->map_count) == 1)
+		if (carveout_heap->request_region)
+			carveout_heap->request_region(carveout_heap->bus_id);
 
 	if (ION_IS_CACHED(flags))
-		ret_value = ioremap_cached(buffer->priv_phys, buffer->size);
+		return ioremap_cached(buffer->priv_phys, buffer->size);
 	else
-		ret_value = ioremap(buffer->priv_phys, buffer->size);
-
-	if (!ret_value)
-		ion_carveout_release_region(carveout_heap);
-	return ret_value;
+		return ioremap(buffer->priv_phys, buffer->size);
 }
 
 void ion_carveout_heap_unmap_kernel(struct ion_heap *heap,
@@ -190,7 +157,10 @@ void ion_carveout_heap_unmap_kernel(struct ion_heap *heap,
 	__arch_iounmap(buffer->vaddr);
 	buffer->vaddr = NULL;
 
-	ion_carveout_release_region(carveout_heap);
+	if (atomic_dec_and_test(&carveout_heap->map_count))
+		if (carveout_heap->release_region)
+			carveout_heap->release_region(carveout_heap->bus_id);
+
 	return;
 }
 
@@ -199,22 +169,21 @@ int ion_carveout_heap_map_user(struct ion_heap *heap, struct ion_buffer *buffer,
 {
 	struct ion_carveout_heap *carveout_heap =
 		container_of(heap, struct ion_carveout_heap, heap);
-	int ret_value = 0;
 
-	if (ion_carveout_request_region(carveout_heap))
-		return -EINVAL;
+	if (atomic_inc_return(&carveout_heap->map_count) == 1)
+		if (carveout_heap->request_region)
+			carveout_heap->request_region(carveout_heap->bus_id);
 
-	if (!ION_IS_CACHED(flags))
-		vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
-
-	ret_value =  remap_pfn_range(vma, vma->vm_start,
-			__phys_to_pfn(buffer->priv_phys) + vma->vm_pgoff,
-			vma->vm_end - vma->vm_start,
-			vma->vm_page_prot);
-
-	if (ret_value)
-		ion_carveout_release_region(carveout_heap);
-	return ret_value;
+	if (ION_IS_CACHED(flags))
+		return remap_pfn_range(vma, vma->vm_start,
+			       __phys_to_pfn(buffer->priv_phys) + vma->vm_pgoff,
+			       vma->vm_end - vma->vm_start,
+			       vma->vm_page_prot);
+	else
+		return remap_pfn_range(vma, vma->vm_start,
+			       __phys_to_pfn(buffer->priv_phys) + vma->vm_pgoff,
+					vma->vm_end - vma->vm_start,
+					pgprot_noncached(vma->vm_page_prot));
 }
 
 void ion_carveout_heap_unmap_user(struct ion_heap *heap,
@@ -222,7 +191,10 @@ void ion_carveout_heap_unmap_user(struct ion_heap *heap,
 {
 	struct ion_carveout_heap *carveout_heap =
 		container_of(heap, struct ion_carveout_heap, heap);
-	ion_carveout_release_region(carveout_heap);
+
+	if (atomic_dec_and_test(&carveout_heap->map_count))
+		if (carveout_heap->release_region)
+			carveout_heap->release_region(carveout_heap->bus_id);
 }
 
 int ion_carveout_cache_ops(struct ion_heap *heap, struct ion_buffer *buffer,
@@ -251,16 +223,20 @@ int ion_carveout_cache_ops(struct ion_heap *heap, struct ion_buffer *buffer,
 	return 0;
 }
 
-static int ion_carveout_print_debug(struct ion_heap *heap, struct seq_file *s)
+static unsigned long ion_carveout_get_allocated(struct ion_heap *heap)
 {
 	struct ion_carveout_heap *carveout_heap =
 		container_of(heap, struct ion_carveout_heap, heap);
 
-	seq_printf(s, "total bytes currently allocated: %lx\n",
-		carveout_heap->allocated_bytes);
-	seq_printf(s, "total heap size: %lx\n", carveout_heap->total_size);
+	return carveout_heap->allocated_bytes;
+}
 
-	return 0;
+static unsigned long ion_carveout_get_total(struct ion_heap *heap)
+{
+	struct ion_carveout_heap *carveout_heap =
+		container_of(heap, struct ion_carveout_heap, heap);
+
+	return carveout_heap->total_size;
 }
 
 int ion_carveout_heap_map_iommu(struct ion_buffer *buffer,
@@ -376,7 +352,8 @@ static struct ion_heap_ops carveout_heap_ops = {
 	.map_dma = ion_carveout_heap_map_dma,
 	.unmap_dma = ion_carveout_heap_unmap_dma,
 	.cache_op = ion_carveout_cache_ops,
-	.print_debug = ion_carveout_print_debug,
+	.get_allocated = ion_carveout_get_allocated,
+	.get_total = ion_carveout_get_total,
 	.map_iommu = ion_carveout_heap_map_iommu,
 	.unmap_iommu = ion_carveout_heap_unmap_iommu,
 };
@@ -399,7 +376,6 @@ struct ion_heap *ion_carveout_heap_create(struct ion_platform_heap *heap_data)
 	ret = gen_pool_add(carveout_heap->pool, carveout_heap->base,
 			heap_data->size, -1);
 	if (ret < 0) {
-		gen_pool_destroy(carveout_heap->pool);
 		kfree(carveout_heap);
 		return ERR_PTR(-EINVAL);
 	}
@@ -407,20 +383,13 @@ struct ion_heap *ion_carveout_heap_create(struct ion_platform_heap *heap_data)
 	carveout_heap->heap.type = ION_HEAP_TYPE_CARVEOUT;
 	carveout_heap->allocated_bytes = 0;
 	carveout_heap->total_size = heap_data->size;
+	if (heap_data->setup_region)
+		carveout_heap->bus_id = heap_data->setup_region();
+	if (heap_data->request_region)
+		carveout_heap->request_region = heap_data->request_region;
+	if (heap_data->release_region)
+		carveout_heap->release_region = heap_data->release_region;
 
-	if (heap_data->extra_data) {
-		struct ion_co_heap_pdata *extra_data =
-				heap_data->extra_data;
-
-		if (extra_data->setup_region)
-			carveout_heap->bus_id = extra_data->setup_region();
-		if (extra_data->request_region)
-			carveout_heap->request_region =
-					extra_data->request_region;
-		if (extra_data->release_region)
-			carveout_heap->release_region =
-					extra_data->release_region;
-	}
 	return &carveout_heap->heap;
 }
 

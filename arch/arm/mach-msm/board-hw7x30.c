@@ -6795,7 +6795,6 @@ struct platform_device msm_device_sdio_al = {
 
 #endif /* CONFIG_MSM_SDIO_AL */
 
-#if 0
 #ifdef CONFIG_ION_MSM
 struct ion_platform_data ion_pdata = {
     .nr = MSM_ION_HEAP_NUM,
@@ -6841,7 +6840,6 @@ struct platform_device ion_dev = {
     .id = 1,
     .dev = { .platform_data = &ion_pdata },
 };
-#endif
 #endif
 
 
@@ -7026,7 +7024,7 @@ static struct platform_device *devices[] __initdata = {
     &huawei_device_detect,
 
 #ifdef CONFIG_ION_MSM
-//    &ion_dev,
+    &ion_dev,
 #endif
 
 };
