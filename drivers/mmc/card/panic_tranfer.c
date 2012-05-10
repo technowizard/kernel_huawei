@@ -18,6 +18,11 @@
 
 static struct mmc_card *panic_card;
 
+extern void mmc_panic_start_req(struct mmc_host *host, struct mmc_request *mrq);
+extern int mmc_panic_wait_for_cmd(struct mmc_host *host, struct mmc_command *cmd, int retries);
+extern int mmc_panic_write(u8* buffer, unsigned log_len);
+
+
 int mmc_panic_save_card(void *card)
 {
 	if(card != NULL) {

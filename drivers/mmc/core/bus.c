@@ -23,9 +23,6 @@
 #include "sdio_cis.h"
 #include "bus.h"
 
-#ifdef CONFIG_HUAWEI_KERNEL
-#include "hw_extern_sdcard.h"
-#endif
 #define to_mmc_driver(d)	container_of(d, struct mmc_driver, drv)
 
 static ssize_t mmc_type_show(struct device *dev,
@@ -266,9 +263,8 @@ int mmc_add_card(struct mmc_card *card)
 {
 	int ret;
 	const char *type;
-#ifdef CONFIG_HUAWEI_KERNEL
-	mdelay(100);
-#endif
+	const char *uhs_bus_speed_mode = "";
+
 	dev_set_name(&card->dev, "%s:%04x", mmc_hostname(card->host), card->rca);
 
 	switch (card->type) {
@@ -297,6 +293,28 @@ int mmc_add_card(struct mmc_card *card)
 		break;
 	}
 
+	if (mmc_sd_card_uhs(card)) {
+		switch (card->sd_bus_speed) {
+		case UHS_SDR104_BUS_SPEED:
+			uhs_bus_speed_mode = "SDR104 ";
+			break;
+		case UHS_SDR50_BUS_SPEED:
+			uhs_bus_speed_mode = "SDR50 ";
+			break;
+		case UHS_DDR50_BUS_SPEED:
+			uhs_bus_speed_mode = "DDR50 ";
+			break;
+		case UHS_SDR25_BUS_SPEED:
+			uhs_bus_speed_mode = "SDR25 ";
+			break;
+		case UHS_SDR12_BUS_SPEED:
+			uhs_bus_speed_mode = "SDR12 ";
+			break;
+		default:
+			uhs_bus_speed_mode = "";
+			break;
+		}
+	}
 	if (mmc_host_is_spi(card->host)) {
 		printk(KERN_INFO "%s: new %s%s%s card on SPI\n",
 			mmc_hostname(card->host),
@@ -304,20 +322,15 @@ int mmc_add_card(struct mmc_card *card)
 			mmc_card_ddr_mode(card) ? "DDR " : "",
 			type);
 	} else {
-		printk(KERN_INFO "%s: new %s%s%s card at address %04x\n",
+		pr_info("%s: new %s%s%s%s card at address %04x\n",
 			mmc_hostname(card->host),
 			mmc_sd_card_uhs(card) ? "ultra high speed " :
 			(mmc_card_highspeed(card) ? "high speed " : ""),
 			mmc_card_ddr_mode(card) ? "DDR " : "",
+			uhs_bus_speed_mode,
 			type, card->rca);
 	}
 
-#ifdef CONFIG_HUAWEI_KERNEL
-    if(MMC_TYPE_SD  == card->type)
-    {
-        hw_extern_sdcard_insert();
-    }
-#endif
 #ifdef CONFIG_DEBUG_FS
 	mmc_add_card_debugfs(card);
 #endif
@@ -349,14 +362,6 @@ void mmc_remove_card(struct mmc_card *card)
 			printk(KERN_INFO "%s: card %04x removed\n",
 				mmc_hostname(card->host), card->rca);
 		}
-        
-        #ifdef CONFIG_HUAWEI_KERNEL
-        if(MMC_TYPE_SD  == card->type)
-        {
-            hw_extern_sdcard_remove();
-        }
-        #endif
-
 		device_del(&card->dev);
 	}
 

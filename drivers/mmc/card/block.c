@@ -552,6 +552,7 @@ static int get_card_status(struct mmc_card *card, u32 *status, int retries)
 	return err;
 }
 
+#define ERR_NOMEDIUM	3
 #define ERR_RETRY	2
 #define ERR_ABORT	1
 #define ERR_CONTINUE	0
@@ -623,6 +624,9 @@ static int mmc_blk_cmd_recovery(struct mmc_card *card, struct request *req,
 	u32 status, stop_status = 0;
 	int err, retry;
 
+	if (mmc_card_removed(card))
+		return ERR_NOMEDIUM;
+
 	/*
 	 * Try to get card status which indicates both the card state
 	 * and why there was no response.  If the first attempt fails,
@@ -639,8 +643,12 @@ static int mmc_blk_cmd_recovery(struct mmc_card *card, struct request *req,
 	}
 
 	/* We couldn't get a response from the card.  Give up. */
-	if (err)
+	if (err) {
+		/* Check if the card is removed */
+		if (mmc_detect_card_removed(card->host))
+			return ERR_NOMEDIUM;
 		return ERR_ABORT;
+	}
 
 	/*
 	 * Check the current card state.  If it is in some data transfer
@@ -972,6 +980,7 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *req)
 				if (retry++ < 5)
 					continue;
 			case ERR_ABORT:
+			case ERR_NOMEDIUM:
 				goto cmd_abort;
 			case ERR_CONTINUE:
 				break;
@@ -1078,6 +1087,8 @@ static int mmc_blk_issue_rw_rq(struct mmc_queue *mq, struct request *req)
 
  cmd_abort:
 	spin_lock_irq(&md->lock);
+	if (mmc_card_removed(card))
+		req->cmd_flags |= REQ_QUIET;
 	while (ret)
 		ret = __blk_end_request(req, -EIO, blk_rq_cur_bytes(req));
 	spin_unlock_irq(&md->lock);
@@ -1294,7 +1305,7 @@ static int mmc_blk_alloc_parts(struct mmc_card *card, struct mmc_blk_data *md)
 	if (!mmc_card_mmc(card))
 		return 0;
 
-	if (card->ext_csd.boot_size) {
+	if (card->ext_csd.boot_size && mmc_boot_partition_access(card->host)) {
 		ret = mmc_blk_alloc_part(card, md, EXT_CSD_PART_CONFIG_ACC_BOOT0,
 					 card->ext_csd.boot_size >> 9,
 					 true,
@@ -1316,6 +1327,9 @@ static int
 mmc_blk_set_blksize(struct mmc_blk_data *md, struct mmc_card *card)
 {
 	int err;
+
+	if (mmc_card_blockaddr(card) || mmc_card_ddr_mode(card))
+		return 0;
 
 	mmc_claim_host(card->host);
 	err = mmc_set_blocklen(card, 512);
