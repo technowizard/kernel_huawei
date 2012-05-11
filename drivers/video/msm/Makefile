@@ -57,7 +57,7 @@ obj-$(CONFIG_FB_MSM_MDDI) += msm_mddi.o
 
 #/*< DTS2010082601848 lijianzhao 20100826 begin */
 ifeq ($(CONFIG_HUAWEI_KERNEL),y)
-obj-$(CONFIG_FB_MSM_MDDI_NT35582_WVGA) += mddi_nt35582.o
+obj-$(CONFIG_FB_MSM_MDDI_NT35582_WVGA) += mddi_nt35582.o mddi_nt35510.o
 endif
 #/* DTS2010082601848 lijianzhao 20100826 end >*/
 #/*< DTS2010120703279 lijianzhao 20101207 begin */
