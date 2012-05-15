@@ -265,6 +265,8 @@ int mmc_add_card(struct mmc_card *card)
 	const char *type;
 	const char *uhs_bus_speed_mode = "";
 
+	mdelay(100);
+
 	dev_set_name(&card->dev, "%s:%04x", mmc_hostname(card->host), card->rca);
 
 	switch (card->type) {

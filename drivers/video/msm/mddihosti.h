@@ -18,6 +18,7 @@
 #include "mddihost.h"
 #include <linux/clk.h>
 
+#define FEATURE_MDDI_DISABLE_REVERSE
 /* Register offsets in MDDI, applies to both msm_pmdh_base and
  * (u32)msm_emdh_base. */
 #define MDDI_CMD   		0x0000

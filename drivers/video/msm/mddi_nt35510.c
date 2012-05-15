@@ -155,6 +155,7 @@ static int __init nt35510_init(void)
 	    pinfo->clk_max = 192000000;
         pinfo->lcd.vsync_enable = TRUE;
         pinfo->lcd.refx100 = 5500;
+		pinfo->mddi.is_type1 = TRUE;
 		pinfo->lcd.v_back_porch = 0;
 		pinfo->lcd.v_front_porch = 0;
 		pinfo->lcd.v_pulse_width = 22;

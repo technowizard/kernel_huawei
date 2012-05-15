@@ -2448,8 +2448,10 @@ int mdp4_overlay_set(struct fb_info *info, struct mdp_overlay *req)
 
 	if (ctrl->panel_mode & MDP4_PANEL_MDDI) {
 		if (mdp_hw_revision == MDP4_REVISION_V2_1 &&
-			pipe->mixer_num == MDP4_MIXER0)
+			pipe->mixer_num == MDP4_MIXER0) {
 			mdp4_overlay_status_write(MDP4_OVERLAY_TYPE_SET, true);
+			mdp4_overlay_status_write(MDP4_OVERLAY_TYPE_UNSET, false);
+		}
 	}
 
 	if (ctrl->panel_mode & MDP4_PANEL_DTV &&

@@ -50,7 +50,7 @@
 
 #ifdef CONFIG_FB_MSM_LOGO
 #define INIT_IMAGE_FILE "/initlogo.rle"
-extern int load_565rle_image(char *filename);
+extern int load_888rle_image(char *filename);
 #endif
 
 #ifdef CONFIG_FB_MSM_TRIPLE_BUFFER
@@ -1324,7 +1324,7 @@ static int msm_fb_register(struct msm_fb_data_type *mfd)
 	     mfd->index, fbi->var.xres, fbi->var.yres, fbi->fix.smem_len);
 
 #ifdef CONFIG_FB_MSM_LOGO
-	if (!load_565rle_image(INIT_IMAGE_FILE)) ;	/* Flip buffer */
+	if (!load_888rle_image(INIT_IMAGE_FILE)) ;	/* Flip buffer */
 #endif
 	ret = 0;
 
@@ -1531,6 +1531,7 @@ static int msm_fb_pan_display(struct fb_var_screeninfo *var,
 	struct mdp_dirty_region *dirtyPtr = NULL;
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
 	struct msm_fb_panel_data *pdata;
+	static bool is_first_frame = TRUE;
 
 	if (info->node != 0 || mfd->cont_splash_done)	/* primary */
 		if ((!mfd->op_enable) || (!mfd->panel_power_on))
@@ -1604,7 +1605,12 @@ static int msm_fb_pan_display(struct fb_var_screeninfo *var,
 
 	mdp_set_dma_pan_info(info, dirtyPtr,
 			     (var->activate == FB_ACTIVATE_VBL));
-	mdp_dma_pan_update(info);
+	if(is_first_frame) {
+		is_first_frame = FALSE;
+		printk("%s:Don't refresh the first frame to LCD\n",__func__);
+	}
+	else
+		mdp_dma_pan_update(info);
 	up(&msm_fb_pan_sem);
 
 	if (unset_bl_level && !bl_updated) {
